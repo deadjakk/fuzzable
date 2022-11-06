@@ -380,10 +380,6 @@ def run_harness_generation(view, func: Function) -> None:
 
     log.log_info("Generating harness from template")
 
-    # if stripped, get the address instead as the symbol
-    if "sub_" in symbol:
-        symbol = hex(func.address_ranges[0].start)
-
     address_obj = next(iter(view.get_functions_by_name(symbol)), None)
     if address_obj is None:
         log.log_error(f"could not find {symbol}")
