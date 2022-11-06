@@ -82,7 +82,6 @@ def transform_elf_to_so(
     log.info(f"Attempting to export the symbol in binary {export}")
 
     # if hex addr specified, export address directly and set name
-    log.info(f"export: {export}")
     if isinstance(export, int):
         lib.add_exported_function(export, f"sub_{export}")
 
