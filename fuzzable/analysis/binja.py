@@ -75,7 +75,6 @@ class BinjaAnalysis(
 
             # demangle the symbol name
             _, name = demangle.demangle_ms(Architecture["x86_64"], func.name)
-            name = demangle.get_qualified_name(name)
 
             # address location for mapping
             addr = str(hex(func.address_ranges[0].start))
@@ -116,8 +115,6 @@ __Number of Symbols Analyzed:__ {len(ranked)}
 __Number of Symbols Skipped:__ {len(self.skipped)}
 
 __Top Fuzzing Contender:__ [{ranked[0].name}](binaryninja://?expr={ranked[0].name})
-
-## Ranked Table (MODE = {self.mode.name})
 
 | Function Signature | Location          | Fuzzability Score | Fuzz-Friendly Name | Risky Data Sinks | Natural Loops | Cyclomatic Complexity | Coverage Depth |
 |--------------------|-------------------|-------------------|--------------------|------------------|---------------|-----------------------|----------------|
@@ -287,11 +284,11 @@ def run_fuzzable(view) -> None:
     settings = Settings()
     task = BinjaAnalysis(
         view,
-        include_sym=settings.get_array("fuzzable.include_sym"),
+        include_sym=settings.get_string_list("fuzzable.include_sym"),
         include_nontop=settings.get_bool("fuzzable.include_nontop"),
-        skip_sym=settings.get_array("fuzzable.skip_sym"),
+        skip_sym=settings.get_string_list("fuzzable.skip_sym"),
         skip_stripped=settings.get_bool("fuzzable.skip_stripped"),
-        score_weights=settings.get_array("fuzzable.score_weights"),
+        score_weights=[float(n) for n in settings.get_string_list("fuzzable.score_weights")],
     )
     task.start()
 
@@ -387,7 +384,12 @@ def run_harness_generation(view, func: Function) -> None:
     if "sub_" in symbol:
         symbol = hex(func.address_ranges[0].start)
 
-    shared_obj = generate.transform_elf_to_so(Path(path), binary, symbol)
+    address_obj = next(iter(view.get_functions_by_name(symbol)), None)
+    if address_obj is None:
+        log.log_error(f"could not find {symbol}")
+        return
+    address = address_obj.start
+    shared_obj = generate.transform_elf_to_so(Path(path), binary, address, override_path=Path(f"{path}.so"))
     generate.generate_harness(
         shared_obj,
         symbol,

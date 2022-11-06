@@ -7,22 +7,20 @@ __init__.py
 from binaryninja.plugin import PluginCommand
 from binaryninja.settings import Settings
 
-from .fuzzable.analysis import binja, DEFAULT_SCORE_WEIGHTS
+from .fuzzable.analysis import binja
 
 # TODO register settings from a config of analysis flags
 
 Settings().register_group("fuzzable", "Fuzzable")
 Settings().register_setting(
     "fuzzable.include_sym",
-    """
-    {
+    """{
         "title"         : "Symbols to Include",
         "description"   : "Include symbols that are accidentally ignored to be considered for analysis.",
         "type"          : "array",
         "elementType"   : "string",
         "default"       : []
-    }
-""",
+    }"""
 )
 
 Settings().register_setting(
@@ -76,17 +74,7 @@ Settings().register_setting(
 
 Settings().register_setting(
     "fuzzable.score_weights",
-    """
-    {
-        "title"         : "Override Score Weights",
-        "description"   : "Change default score weights for each metric.",
-        "type"          : "array",
-        "elementType"   : "string",
-        "default"       : {}
-    }
-""".format(
-        DEFAULT_SCORE_WEIGHTS
-    ),
+    '{"title": "Override Score Weights","description"   : "Change default score weights for each metric.", "type": "array", "elementType"   : "string","default":  ["0.3", "0.3", "0.05", "0.05", "0.3"] }'
 )
 
 PluginCommand.register(
